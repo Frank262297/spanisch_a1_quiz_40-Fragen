@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spanisch Quiz – Niveau A1 (40 Fragen)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #6b0a0a;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 16px;
+  }
+
+  #app { width: 100%; max-width: 720px; }
+
+  #niveau-badge {
+    text-align: center;
+    margin-bottom: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #ffcc00;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  #header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  #logo { font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+  #logo span { color: #ffcc00; }
+
+  #score-box {
+    background: #fff;
+    color: #6b0a0a;
+    border-radius: 8px;
+    padding: 5px 14px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  #progress-bg {
+    background: rgba(255,255,255,0.2);
+    border-radius: 99px;
+    height: 10px;
+    margin-bottom: 6px;
+  }
+
+  #progress-fill {
+    background: #ffcc00;
+    height: 10px;
+    border-radius: 99px;
+    transition: width 0.5s ease;
+  }
+
+  #q-label {
+    text-align: center;
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 10px;
+  }
+
+  #question-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 22px 24px;
+    text-align: center;
+    font-size: 19px;
+    font-weight: 700;
+    color: #222;
+    min-height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+
+  #answers {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .ans-btn {
+    border: none;
+    border-radius: 10px;
+    padding: 16px 12px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: left;
+    min-height: 64px;
+    transition: transform 0.1s, filter 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.25);
+  }
+
+  .ans-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 0 rgba(0,0,0,0.25); }
+  .ans-btn:active:not(:disabled) { transform: scale(0.97); }
+  .ans-btn:disabled { cursor: default; }
+
+  .ans-btn.red    { background: #e21b3c; }
+  .ans-btn.blue   { background: #1368ce; }
+  .ans-btn.yellow { background: #d89e00; }
+  .ans-btn.green  { background: #26890c; }
+
+  .ans-btn.correct { outline: 4px solid #fff; filter: brightness(1.1); }
+  .ans-btn.wrong   { filter: brightness(0.4); box-shadow: none; }
+
+  .sym { width: 26px; height: 26px; flex-shrink: 0; }
+
+  #feedback {
+    text-align: center;
+    font-size: 14px;
+    color: rgba(255,255,255,0.85);
+    min-height: 32px;
+    padding: 4px 0;
+  }
+
+  #feedback .correct-msg { color: #aaff80; font-weight: 700; }
+  #feedback .wrong-msg   { color: #ffaaaa; font-weight: 700; }
+
+  #next-btn {
+    display: none;
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    border: none;
+    background: #fff;
+    color: #6b0a0a;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    margin-top: 6px;
+    letter-spacing: 0.5px;
+    transition: background 0.15s, transform 0.1s;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.25);
+  }
+
+  #next-btn:hover { background: #fff0d0; }
+  #next-btn:active { transform: scale(0.98); }
+
+  #score-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 20px;
+    color: #fff;
+    gap: 12px;
+  }
+
+  #trophy { font-size: 72px; }
+  #final-title { font-size: 18px; color: rgba(255,255,255,0.7); font-weight: 600; }
+  #final-score { font-size: 64px; font-weight: 900; letter-spacing: -2px; }
+  #final-bar-bg { width: 100%; max-width: 340px; background: rgba(255,255,255,0.2); border-radius: 99px; height: 12px; margin: 6px 0; }
+  #final-bar { background: #ffcc00; height: 12px; border-radius: 99px; transition: width 1s ease; }
+  #final-msg { font-size: 18px; font-weight: 700; margin-top: 8px; }
+  #final-sub { font-size: 14px; color: rgba(255,255,255,0.65); }
+
+  #restart-btn {
+    margin-top: 20px;
+    padding: 14px 40px;
+    border-radius: 10px;
+    border: none;
+    background: #ffcc00;
+    color: #6b0a0a;
+    font-size: 17px;
+    font-weight: 800;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.25);
+    transition: background 0.15s, transform 0.1s;
+  }
+
+  #restart-btn:hover { background: #ffd733; }
+  #restart-btn:active { transform: scale(0.98); }
+
+  @media (max-width: 480px) {
+    #question-card { font-size: 16px; padding: 16px 14px; }
+    .ans-btn { font-size: 13px; padding: 13px 9px; min-height: 56px; }
+    #logo { font-size: 17px; }
+    #final-score { font-size: 52px; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="quiz-view">
+    <div id="niveau-badge">Spanisch · Nivel A1 · 40 Fragen</div>
+    <div id="header">
+      <div id="logo">Quiz <span>ES</span></div>
+      <div id="score-box">✓ <span id="pts">0</span> / 40</div>
+    </div>
+
+    <div id="progress-bg"><div id="progress-fill" style="width:2.5%"></div></div>
+    <div id="q-label">Frage <span id="cur-num">1</span> von 40</div>
+
+    <div id="question-card"></div>
+    <div id="answers"></div>
+    <div id="feedback"></div>
+    <button id="next-btn">Weiter →</button>
+  </div>
+
+  <div id="score-screen">
+    <div id="trophy">🏆</div>
+    <div id="final-title">Tu resultado – Nivel A1</div>
+    <div id="final-score"></div>
+    <div id="final-bar-bg"><div id="final-bar" style="width:0%"></div></div>
+    <div id="final-msg"></div>
+    <div id="final-sub"></div>
+    <button id="restart-btn">🔄 Nochmal spielen</button>
+  </div>
+
+</div>
+
+<script>
+const SVG = {
+  triangle: `<svg class="sym" viewBox="0 0 24 24"><polygon points="12,3 22,21 2,21" fill="white"/></svg>`,
+  diamond:  `<svg class="sym" viewBox="0 0 24 24"><polygon points="12,2 22,12 12,22 2,12" fill="white"/></svg>`,
+  circle:   `<svg class="sym" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="white"/></svg>`,
+  square:   `<svg class="sym" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="3" fill="white"/></svg>`
+};
+
+const SHAPES = [SVG.triangle, SVG.diamond, SVG.circle, SVG.square];
+const COLORS = ['red', 'blue', 'yellow', 'green'];
+
+const questions = [
+  // Begrüßungen & Vorstellung
+  { q: "¿Cómo se dice 'Hallo' auf Spanisch?", opts: ["Adiós", "Hola", "Gracias", "Por favor"], ans: 1, exp: "Hola = Hallo" },
+  { q: "¿Qué significa 'Buenos días'?", opts: ["Guten Abend", "Gute Nacht", "Guten Morgen", "Auf Wiedersehen"], ans: 2, exp: "Buenos días = Guten Morgen" },
+  { q: "¿Cómo se dice 'Auf Wiedersehen'?", opts: ["Hola", "Gracias", "Adiós", "Por favor"], ans: 2, exp: "Adiós = Auf Wiedersehen" },
+  { q: "¿Qué significa 'Me llamo'?", opts: ["Ich wohne", "Ich heiße", "Ich habe", "Ich bin"], ans: 1, exp: "Me llamo = Ich heiße" },
+  { q: "¿Cómo se dice 'Danke' auf Spanisch?", opts: ["Por favor", "De nada", "Gracias", "Perdón"], ans: 2, exp: "Gracias = Danke" },
+  { q: "¿Qué significa 'Por favor'?", opts: ["Danke", "Entschuldigung", "Bitte", "Gern geschehen"], ans: 2, exp: "Por favor = Bitte" },
+  { q: "¿Cómo se dice 'Wie geht es dir?' auf Spanisch?", opts: ["¿Cuántos años tienes?", "¿Cómo te llamas?", "¿Cómo estás?", "¿Dónde vives?"], ans: 2, exp: "¿Cómo estás? = Wie geht es dir?" },
+  { q: "¿Qué significa 'Mucho gusto'?", opts: ["Sehr lecker", "Sehr müde", "Sehr viel", "Sehr erfreut / Freut mich"], ans: 3, exp: "Mucho gusto = Freut mich (beim Kennenlernen)" },
+
+  // Zahlen
+  { q: "¿Cómo se dice die Zahl '7' auf Spanisch?", opts: ["Seis", "Ocho", "Siete", "Cinco"], ans: 2, exp: "7 = siete" },
+  { q: "¿Qué número es 'quince'?", opts: ["13", "14", "15", "16"], ans: 2, exp: "Quince = 15" },
+  { q: "¿Cómo se dice '100' auf Spanisch?", opts: ["Mil", "Cien", "Diez", "Veinte"], ans: 1, exp: "100 = cien" },
+  { q: "¿Qué número es 'treinta'?", opts: ["13", "30", "33", "23"], ans: 1, exp: "Treinta = 30" },
+  { q: "¿Cómo se dice '2' auf Spanisch?", opts: ["Uno", "Tres", "Dos", "Cuatro"], ans: 2, exp: "2 = dos" },
+
+  // Farben
+  { q: "¿Qué color es 'rojo'?", opts: ["Blau", "Grün", "Gelb", "Rot"], ans: 3, exp: "Rojo = Rot" },
+  { q: "¿Cómo se dice 'Blau' auf Spanisch?", opts: ["Verde", "Azul", "Amarillo", "Negro"], ans: 1, exp: "Blau = azul" },
+  { q: "¿Qué color es 'amarillo'?", opts: ["Grün", "Rot", "Gelb", "Weiß"], ans: 2, exp: "Amarillo = Gelb" },
+  { q: "¿Cómo se dice 'Schwarz' auf Spanisch?", opts: ["Blanco", "Gris", "Negro", "Marrón"], ans: 2, exp: "Schwarz = negro" },
+
+  // Familie
+  { q: "¿Qué significa 'madre'?", opts: ["Schwester", "Tochter", "Mutter", "Tante"], ans: 2, exp: "Madre = Mutter" },
+  { q: "¿Cómo se dice 'Bruder' auf Spanisch?", opts: ["Hermana", "Primo", "Padre", "Hermano"], ans: 3, exp: "Bruder = hermano" },
+  { q: "¿Qué significa 'hijo'?", opts: ["Vater", "Sohn", "Onkel", "Großvater"], ans: 1, exp: "Hijo = Sohn" },
+  { q: "¿Cómo se dice 'Großmutter' auf Spanisch?", opts: ["Abuelo", "Tía", "Abuela", "Prima"], ans: 2, exp: "Großmutter = abuela" },
+
+  // Essen & Trinken
+  { q: "¿Qué significa 'agua'?", opts: ["Saft", "Milch", "Wein", "Wasser"], ans: 3, exp: "Agua = Wasser" },
+  { q: "¿Cómo se dice 'Brot' auf Spanisch?", opts: ["Queso", "Pan", "Leche", "Arroz"], ans: 1, exp: "Brot = pan" },
+  { q: "¿Qué significa 'leche'?", opts: ["Wasser", "Saft", "Milch", "Kaffee"], ans: 2, exp: "Leche = Milch" },
+  { q: "¿Cómo se dice 'Apfel' auf Spanisch?", opts: ["Naranja", "Plátano", "Manzana", "Uva"], ans: 2, exp: "Apfel = manzana" },
+  { q: "¿Qué significa 'pollo'?", opts: ["Fisch", "Schwein", "Rind", "Hähnchen"], ans: 3, exp: "Pollo = Hähnchen" },
+
+  // Alltag & Orte
+  { q: "¿Qué significa 'casa'?", opts: ["Schule", "Straße", "Haus", "Laden"], ans: 2, exp: "Casa = Haus" },
+  { q: "¿Cómo se dice 'Schule' auf Spanisch?", opts: ["Tienda", "Colegio", "Hospital", "Banco"], ans: 1, exp: "Schule = colegio" },
+  { q: "¿Qué significa 'ciudad'?", opts: ["Dorf", "Land", "Stadt", "Berg"], ans: 2, exp: "Ciudad = Stadt" },
+  { q: "¿Cómo se dice 'Supermarkt' auf Spanisch?", opts: ["Mercado", "Supermercado", "Tienda", "Farmacia"], ans: 1, exp: "Supermarkt = supermercado" },
+
+  // Grammatik & Verben
+  { q: "¿Cuál es la forma correcta? 'Yo ___ español.'", opts: ["hablas", "hablo", "habla", "hablan"], ans: 1, exp: "Yo hablo = Ich spreche (1. Person Singular)" },
+  { q: "¿Qué significa 'tener'?", opts: ["Sein", "Gehen", "Haben", "Machen"], ans: 2, exp: "Tener = haben" },
+  { q: "Completa: 'Ella ___ en Madrid.'", opts: ["vivo", "vives", "vive", "vivimos"], ans: 2, exp: "Ella vive = Sie wohnt (3. Person Singular)" },
+  { q: "¿Qué significa 'querer'?", opts: ["Können", "Wollen / Mögen", "Müssen", "Dürfen"], ans: 1, exp: "Querer = wollen / mögen" },
+  { q: "¿Cuál es el artículo de 'libro' (Buch)?", opts: ["La", "Las", "Los", "El"], ans: 3, exp: "El libro = das Buch (maskulin)" },
+  { q: "¿Cuál es el artículo de 'mesa' (Tisch)?", opts: ["El", "Los", "La", "Le"], ans: 2, exp: "La mesa = der Tisch (feminin)" },
+
+  // Wochentage & Zeit
+  { q: "¿Qué día es 'miércoles'?", opts: ["Dienstag", "Donnerstag", "Freitag", "Mittwoch"], ans: 3, exp: "Miércoles = Mittwoch" },
+  { q: "¿Cómo se dice 'Montag' auf Spanisch?", opts: ["Martes", "Miércoles", "Lunes", "Jueves"], ans: 2, exp: "Montag = lunes" },
+  { q: "¿Qué significa 'mañana'?", opts: ["Heute", "Gestern", "Morgen", "Jetzt"], ans: 2, exp: "Mañana = morgen (oder: der Morgen)" },
+  { q: "¿Cómo se dice 'Wie spät ist es?' auf Spanisch?", opts: ["¿Qué día es hoy?", "¿Cuánto cuesta?", "¿Qué hora es?", "¿Dónde estás?"], ans: 2, exp: "¿Qué hora es? = Wie spät ist es?" }
+];
+
+const TOTAL = questions.length;
+let cur = 0, score = 0, answered = false;
+
+const qCard      = document.getElementById('question-card');
+const ansGrid    = document.getElementById('answers');
+const feedback   = document.getElementById('feedback');
+const nextBtn    = document.getElementById('next-btn');
+const ptsEl      = document.getElementById('pts');
+const curNumEl   = document.getElementById('cur-num');
+const progressEl = document.getElementById('progress-fill');
+const quizView   = document.getElementById('quiz-view');
+const scoreScr   = document.getElementById('score-screen');
+
+function load() {
+  answered = false;
+  feedback.innerHTML = '';
+  nextBtn.style.display = 'none';
+  const q = questions[cur];
+  curNumEl.textContent = cur + 1;
+  progressEl.style.width = ((cur + 1) / TOTAL * 100) + '%';
+  qCard.textContent = q.q;
+  ansGrid.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'ans-btn ' + COLORS[i];
+    btn.innerHTML = `<span class="sym">${SHAPES[i]}</span><span>${opt}</span>`;
+    btn.onclick = () => pick(i, btn);
+    ansGrid.appendChild(btn);
+  });
+}
+
+function pick(idx, btn) {
+  if (answered) return;
+  answered = true;
+  const q = questions[cur];
+  const btns = ansGrid.querySelectorAll('.ans-btn');
+  btns.forEach(b => b.disabled = true);
+  btns[q.ans].classList.add('correct');
+  if (idx === q.ans) {
+    score++;
+    ptsEl.textContent = score;
+    feedback.innerHTML = `<span class="correct-msg">✓ Richtig!</span>  ${q.exp}`;
+  } else {
+    btn.classList.add('wrong');
+    feedback.innerHTML = `<span class="wrong-msg">✗ Falsch.</span>  ${q.exp}`;
+  }
+  nextBtn.style.display = 'block';
+  nextBtn.textContent = cur < TOTAL - 1 ? 'Weiter →' : 'Ergebnis anzeigen 🏆';
+}
+
+nextBtn.onclick = () => {
+  cur++;
+  if (cur < TOTAL) { load(); }
+  else { showScore(); }
+};
+
+function showScore() {
+  quizView.style.display = 'none';
+  scoreScr.style.display = 'flex';
+  document.getElementById('final-score').textContent = score + ' / ' + TOTAL;
+  setTimeout(() => {
+    document.getElementById('final-bar').style.width = (score / TOTAL * 100) + '%';
+  }, 100);
+  const pct = score / TOTAL;
+  let msg, sub;
+  if (pct >= 0.9)      { msg = '🎉 ¡Fantástico! Bereit für A2!';        sub = 'Hervorragende Leistung – ¡muy bien!' }
+  else if (pct >= 0.7) { msg = '👍 ¡Muy bien! Starke Leistung!';        sub = 'Noch ein bisschen üben, dann klappt A2!' }
+  else if (pct >= 0.5) { msg = '😊 ¡Bien! Auf dem richtigen Weg!';      sub = 'Weiter üben – ¡tú puedes!' }
+  else                 { msg = '💪 ¡Otra vez!';                          sub = 'Nochmal versuchen – Übung macht den Meister!' }
+  document.getElementById('final-msg').textContent = msg;
+  document.getElementById('final-sub').textContent = sub;
+}
+
+document.getElementById('restart-btn').onclick = () => {
+  cur = 0; score = 0;
+  ptsEl.textContent = 0;
+  scoreScr.style.display = 'none';
+  quizView.style.display = 'block';
+  load();
+};
+
+load();
+</script>
+</body>
+</html>
